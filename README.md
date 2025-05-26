@@ -9,9 +9,11 @@ Me falta estructurar bien el repo
 Para esta parte me voy a basar en sitios como [Datalemur](https://datalemur.com/), [HackerRank](https://www.hackerrank.com/domains/sql) y quizás otros sitios que iré poniendo más adelante.
 
 ### [Basic](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/basic.md)
+
 - [Like Y Not like](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/basic.md#like-y-not-like)
 
 ### [Intermediate](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/intermediate.md)
+
 - [Aggregate Functions](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/intermediate.md#aggregate-functions)
 - [GROUP BY](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/intermediate.md#group-by)
 - [HAVING](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/intermediate.md#having)

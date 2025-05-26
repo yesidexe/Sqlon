@@ -159,3 +159,12 @@ FROM marvel_avengers;
 ```
 
 ## JOINS
+Sintaxis básica
+```sql
+SELECT 
+  t1.column_a, 
+  t2.column_b
+FROM table1 AS t1
+JOIN table2 AS t2
+  ON t1.common_column = t2.common_column;
+```
