@@ -37,3 +37,125 @@ order by min desc;
 ```
 
 ## HAVING
+Se usa como un ``WHEN`` pero para filtrar después de aplicar el GROUP BY, normalmente el filtro se aplica a la función de agregación.
+
+Sitaxis basica
+```sql
+SELECT columna, función_agregada
+FROM tabla
+GROUP BY columna
+HAVING condición_sobre_la_función_agregada;
+```
+
+Ejemplo
+```sql
+SELECT ticker, min(open) 
+FROM stock_prices
+group by ticker
+having min(open) > 100;
+```
+
+## DISTINCT
+DISTINCT se usa junto con SELECT para devolver solo valores únicos, eliminando los duplicados en el resultado.
+
+En este ejemplo, ``DISTINCT`` se usa dentro de ``COUNT()`` para contar los productos no repetidos. La función del código es mostrar las categorías agrupadas y cuántos productos únicos tiene cada una. Aunque acá se usa con ``COUNT()``, ``DISTINCT`` también puede usarse por separado en un SELECT para eliminar duplicados.
+
+```sql
+select category, count(DISTINCT product)
+from product_spend 
+group by category
+```
+
+## CASE
+La sentencia CASE en SQL le permite dar forma, transformar, manipular y filtrar datos basándose en condiciones especificadas. Es una herramienta de expresión condicional que permite personalizar los resultados de las consultas, crear nuevas categorías y aplicar lógica condicional.
+
+### CASE con SELECT
+Se utiliza para crear nuevas columnas, categorizar datos o realizar cálculos basados en condiciones específicas. Ayuda a adaptar el resultado de la consulta para satisfacer requisitos específicos.
+
+Sintaxis
+```sql
+SELECT
+  column_1,
+  column_2,
+  CASE 
+    WHEN condition_1 THEN 'result_1'
+    WHEN condition_2 THEN 'result_2'
+    -- Puedes agregar más condiciones si es necesario
+    ELSE 'default_result' -- Si ninguna condición se cumple
+  END AS new_column_name
+FROM table_1;
+```
+
+En este **Ejemplo** crea la columna "popularity" y dependiendo del ``when`` los valores en las filas serian, Super likes, Good likes o Low likes.
+```sql
+select actor, character, platform, avg_likes,
+CASE
+  when avg_likes >= 15000 then 'Super Likes'
+  when avg_likes between 5000 and 14999 then 'Good Likes'
+  else 'Low Likes'
+end as popularity
+from marvel_avengers
+order by avg_likes desc
+```
+
+### CASE con WHERE
+Sintaxis
+```sql
+SELECT column_1, column_2
+FROM table_1
+WHERE 
+  CASE 
+    WHEN condition_1 THEN 1
+    WHEN condition_2 THEN 1
+    ELSE 0
+  END = 1;
+```
+
+En este **Ejemplo** se filtra junto con AND y si se cumple la condición queda como verdadera y filtraria, por eso el 1(True), de lo contrario el Else al final indicando 0.
+```sql
+SELECT actor, character, platform, followers
+FROM marvel_avengers
+WHERE 
+  CASE 
+    WHEN platform = 'Instagram' AND followers >= 500000 THEN 1
+    WHEN platform = 'Twitter' AND followers >= 200000 THEN 1
+    WHEN platform NOT IN ('Instagram', 'Twitter') AND followers >= 100000 THEN 1
+    ELSE 0
+  END = 1;
+```
+
+### CASE con funciones de agregación
+En entos ejemplos el `CASE` va dentro de la función de agregación, me funciona como un filtro para crear nuevas columnas, por ejemplo:
+- Si la plataforma es instagram entonces me devuelve el valor de followers, y eso se va sumando, sino devuelve 0.
+- Si la plataforma es instagram entonces me devuelve followers, y eso lo va promediando, sino, no devuelve nada.
+- Si los followers son mayores a X cantidad me devuelve 1, para ir contando cuantos hay de este estilo, sino, no me devuelve nada.
+
+> Fijense el unico que devuelve algo es ``SUM()``, porque si no se cumple suma un 0, ``AVG()`` no puede promediar 0 por eso devuelve nada, al igual que ``COUNT()``, que no puede devolver 0 porque lo contaria, por eso devuelve nada.
+
+Ejemplo con ``SUM()``
+```sql
+SELECT
+  SUM(CASE WHEN platform = 'Instagram' THEN followers ELSE 0 END) AS total_instagram,
+  SUM(CASE WHEN platform = 'Twitter' THEN followers ELSE 0 END) AS total_twitter,
+  SUM(CASE WHEN platform NOT IN ('Instagram', 'Twitter') THEN followers ELSE 0 END) AS total_otras
+FROM marvel_avengers;
+```
+
+Ejemplo con ``AVG()``
+```sql
+SELECT 
+  AVG(CASE WHEN platform = 'Instagram' THEN followers END) AS avg_instagram,
+  AVG(CASE WHEN platform = 'Twitter' THEN followers END) AS avg_twitter
+FROM marvel_avengers;
+```
+
+Ejemplo con ``COUNT()``
+```sql
+SELECT 
+  COUNT(CASE WHEN followers >= 500000 THEN 1 END) AS superestrellas,
+  COUNT(CASE WHEN followers BETWEEN 200000 AND 499999 THEN 1 END) AS famosos,
+  COUNT(CASE WHEN followers < 200000 THEN 1 END) AS desconocidos
+FROM marvel_avengers;
+```
+
+## JOINS
