@@ -159,6 +159,16 @@ FROM marvel_avengers;
 ```
 
 ## JOINS
+Un ``JOIN`` en SQL te permite combinar filas de dos o más tablas según una condición relacionada entre ellas, normalmente una clave (ID) que ambas comparten.
+
+Existen distintos tipos de JOIN:
+- ``INNER JOIN`` – Coincidencias en ambas tablas
+- ``LEFT JOIN`` – 	Todo de la izquierda, más coincidencias de la derecha
+- ``RIGHT JOIN`` - Todo de la derecha, más coincidencias de la izquierda
+- `FULL OUTER JOIN` - Todo de ambas, coincidan o no
+
+>Los más usados son los dos primeros.
+
 Sintaxis básica
 ```sql
 SELECT 
@@ -168,3 +178,29 @@ FROM table1 AS t1
 JOIN table2 AS t2
   ON t1.common_column = t2.common_column;
 ```
+
+**Ejemplo 1**, Necesitabamos mostrar las coincidencias entre ambas tablas según el `user_id`.
+```sql
+SELECT * FROM trades
+INNER JOIN users on trades.user_id = users.user_id;
+```
+
+**Ejemplo 2**, Primero necesitabamos lo mismo de arriba, unir ambas tablas, pero ahora necesitamos mostrar TOP 3 ciudades con la mayor cantidad de tareas completadas, y ordenarlo descendente.
+```sql
+SELECT city, count(status) as completed_orders FROM trades
+INNER JOIN users on trades.user_id = users.user_id
+where status = 'Completed'
+group by city
+order by completed_orders DESC
+limit 3
+```
+
+**Ejemplo 3**, nos dan dos tablas, la primera es `pages` que contiene `page_id` y `page_name`, esta tabla nos muestra la página con su id y su nombre. La segunda es `page_likes`, que contiene `user_id`, `page_id` y `liked_date`, esta tabla nos muestra el id de usuario la página y la fecha en que le dio like. Nos piden mostrar las páginas a las que los usuarios no le dieron like, entonces básicament es hacer un left join y las páginas donde los campos de `page_likes` salga null, significa que son páginas sin likes, y eso lo mostramos.
+```sql
+SELECT pages.page_id FROM pages
+left join page_likes on pages.page_id = page_likes.page_id
+where user_id is null
+order by pages.page_id DESC
+```
+
+## DATE FUNCTIONS
