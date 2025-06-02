@@ -204,3 +204,101 @@ order by pages.page_id DESC
 ```
 
 ## DATE FUNCTIONS
+Resumen de lo que se va a cubrir: 
+- ``CURRENT_DATE``, ``CURRENT_TIME`` and ``CURRENT_TIMESTAMP`` to return current date, time and timestamp.
+- Comparison operators ``<``, ``>``, ``=``, ``<=``, and ``>=`` to compare dates
+- ``EXTRACT()`` and ``DATE_PART()`` to extract specific components of date.
+- ``DATE_TRUNC()`` to round down date or timestamp into specific level of precision.
+- ``INTERVAL`` to add or subtract time intervals in calculations.
+- ``TO_CHAR()`` to convert date or timestamp into strings.
+- ``::DATE``, ``TO_DATE()``, ``::TIMESTAMP``, and ``TO_TIMESTAMP()`` to convert strings into date or timestamp.
+
+> Para dejar en claro:
+> - Cuando hablamos de **date** es *2023-08-27*, sin el tiempo, cuando hablamos de **timestamp** es *2023-08-27 10:30:00*, con todo y tiempo.
+> - Esta sintaxis es mas aplicada para Postgresql, para Mysql o Sql server, se usa otra distinta [link](https://datalemur.com/blog/mysql-postgresql-date-time-functions).
+
+**Ejemplo** del uso de ``CURRENT_DATE``, ``CURRENT_TIME`` y ``CURRENT_TIMESTAMP``, los cuales me devuelve, la fecha actual, el tiempo actual, y ambas.
+```sql
+SELECT 
+  message_id,
+  sent_date,
+  CURRENT_DATE AS current_date,
+  CURRENT_TIME AS current_time,
+  CURRENT_TIMESTAMP AS current_timestamp
+FROM messages
+LIMIT 3;
+```
+
+**Ejemplo** del uso de ``EXTRACT()`` y ``DATE_PART()``, se usan para el mismo propósito, pero tienen diferente sintaxis, se usa para extraer el año, mes, dia, hora, minutos, etc.
+```sql
+SELECT 
+  message_id, 
+  sent_date,
+  EXTRACT(YEAR FROM sent_date) AS extracted_year,
+  DATE_PART('year', sent_date) AS part_year,
+  EXTRACT(MONTH FROM sent_date) AS extracted_month,
+  DATE_PART('month', sent_date) AS part_month,
+  EXTRACT(DAY FROM sent_date) AS extracted_day,
+  DATE_PART('day', sent_date) AS part_day,
+  EXTRACT(HOUR FROM sent_date) AS extracted_hour,
+  DATE_PART('hour', sent_date) AS part_hour,
+  EXTRACT(MINUTE FROM sent_date) AS extracted_minute,
+  DATE_PART('minute', sent_date) AS part_minute
+FROM messages
+LIMIT 3;
+```
+
+**Ejemplo** del uso de ``DATE_TRUNC()``, esto me va a truncar según el parámetro que elija, por ejemplo, si mi valor en `sent_date` es *08/03/2022 16:43:00*, con month seria *08/01/2022 00:00:00*, con day *08/03/2022 00:00:00*, y con hour *08/03/2022 16:00:00*.
+```sql
+SELECT 
+  message_id,
+  sent_date,
+  DATE_TRUNC('month', sent_date) AS truncated_to_month,
+  DATE_TRUNC('day', sent_date) AS truncated_to_day,
+  DATE_TRUNC('hour', sent_date) AS truncated_to_hour  
+FROM messages
+LIMIT 3;
+```
+
+**Ejemplo** del uso de ``INTERVAL``, me añade o resta dias o tiempo, según especifique.
+```sql
+SELECT 
+  message_id,
+  sent_date,
+  sent_date + INTERVAL '2 days' AS add_2days,
+  sent_date - INTERVAL '3 days' AS minus_3days,
+  sent_date + INTERVAL '2 hours' AS add_2hours,
+  sent_date - INTERVAL '10 minutes' AS minus_10mins
+FROM messages
+LIMIT 3;
+```
+
+**Ejemplo** del uso de ``TO_CHAR()``, solo me convierte de fecha a string según el formato que escoja.
+```sql
+SELECT 
+  message_id,
+  sent_date,
+  TO_CHAR(sent_date, 'YYYY-MM-DD HH:MI:SS') AS formatted_iso8601,
+  TO_CHAR(sent_date, 'YYYY-MM-DD HH:MI:SS AM') AS formatted_12hr,
+  TO_CHAR(sent_date, 'Month DDth, YYYY') AS formatted_longmonth,
+  TO_CHAR(sent_date, 'Mon DD, YYYY') AS formatted_shortmonth,
+  TO_CHAR(sent_date, 'DD Month YYYY') AS formatted_daymonthyear,
+  TO_CHAR(sent_date, 'Month') AS formatted_dayofmonth,
+  TO_CHAR(sent_date, 'Day') AS formatted_dayofweek
+FROM messages
+LIMIT 3;
+```
+
+**Ejemplo** del uso de: 
+- ``::DATE`` o ``TO_DATE()``: Convierte strings a fecha.
+- ``::TIMESTAMP`` o ``TO_TIMESTAMP()``: Convierte strings a marcas de tiempo.
+```sql
+SELECT 
+  sent_date,
+  sent_date::DATE AS casted_date,
+  TO_DATE('2023-08-27', 'YYYY-MM-DD') AS converted_to_date,
+  sent_date::TIMESTAMP AS casted_timestamp,
+  TO_TIMESTAMP('2023-08-27 10:30:00', 'YYYY-MM-DD HH:MI:SS') AS converted_to_timestamp
+FROM messages
+LIMIT 3;
+```

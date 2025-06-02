@@ -20,6 +20,7 @@ Para esta parte me voy a basar en sitios como [Datalemur](https://datalemur.com/
 - [DISTINCT](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/intermediate.md#distinct)
 - [CASE](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/intermediate.md#case)
 - [JOINS](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/intermediate.md#joins)
+- [DATE FUNCTIONS](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/intermediate.md#date-functions)
 
 ## DCL – Data Control Language (Permisos y seguridad)
 
