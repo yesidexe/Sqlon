@@ -302,3 +302,23 @@ SELECT
 FROM messages
 LIMIT 3;
 ```
+
+### Ejercicios de ejemplo
+
+El [ejercicio](https://datalemur.com/questions/sql-average-post-hiatus-1) consiste en mostrar los usuarios que realizaron al menos dos publicaciones en 2021, junto con la cantidad de días entre su publicación más antigua y más reciente de ese año.
+```sql
+select user_id,
+extract(day from (max(post_date)-min(post_date))) as days_between
+from posts
+where extract(year from post_date) = 2021
+group by user_id
+having count(user_id) >= 2
+```
+
+El [ejercicio](https://datalemur.com/questions/second-day-confirmation) consiste en mostrar el ``user_id`` de los usuarios que confirmaron su correo exactamente un día después de haberse registrado (es decir, el segundo día). Lo que hago es unir la tabla ``emails`` que contiene la información en que el email fue creado, con la tabla `texts` que contiene la información de la activación de la cuenta, su estado y la fecha en que se realizó.
+```sql
+SELECT user_id FROM emails
+inner join texts on emails.email_id = texts.email_id
+where texts.signup_action	= 'Confirmed'
+and texts.action_date = emails.signup_date + INTERVAL '1 day';
+```
