@@ -166,8 +166,9 @@ Existen distintos tipos de JOIN:
 - ``LEFT JOIN`` – 	Todo de la izquierda, más coincidencias de la derecha
 - ``RIGHT JOIN`` - Todo de la derecha, más coincidencias de la izquierda
 - `FULL OUTER JOIN` - Todo de ambas, coincidan o no
+- `CROSS JOIN` - Combina cada fila de la primera tabla con cada fila de la segunda, sin condición de unión
 
->Los más usados son los dos primeros.
+>Los más usados son los dos primeros, y el último es el mas distinto o curioso.
 
 Sintaxis básica
 ```sql
@@ -202,6 +203,9 @@ left join page_likes on pages.page_id = page_likes.page_id
 where user_id is null
 order by pages.page_id DESC
 ```
+
+### CROSS JOIN
+BLA BLA
 
 ## DATE FUNCTIONS
 Resumen de lo que se va a cubrir: 
