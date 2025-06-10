@@ -6,7 +6,7 @@ Una **CTE** (con WITH) crea una tabla temporal dentro de una consulta, lo que me
 
 Una **SUBQUERY** es una consulta anidada entre paréntesis dentro de otra. Sirve para calcular o filtrar datos intermedios, permitiendo mayor precisión en el análisis.
 
-### Ejemplos
+### Ejemplo 1 
 
 Este [ejercicio](https://datalemur.com/questions/sql-swapped-food-delivery) es mejor si lo ven desde datalemur, porque es dificil de explicar, voy a resumirlo brevemente. 
 
@@ -29,3 +29,23 @@ cross join total_orders as t
 order by corrected_order_id
 ```
 
+### Ejemplo 2
+
+Este [ejericio](https://datalemur.com/questions/supercloud-customer) también es bastante enredado la primera vez, y más si no sabias que se podia hacer el ``distinct`` en ``count``. La idea es encontrar qué usuarios han comprado al menos un producto de cada categoría disponible. 
+
+Primero se agrupa por ``customer_id``, y para cada uno se cuenta cuántas categorías distintas de producto ha comprado.
+
+Después, se compara ese número con el total de categorías existentes en la tabla ``products``. Si coinciden, significa que ese cliente ha comprado al menos un producto de cada categoría, y se considera "super cloud customer"
+
+```sql
+with category_products_count as (
+  select c.customer_id, count(distinct p.product_category) as category_count 
+  from customer_contracts as c 
+  inner join products as p on p.product_id = c.product_id
+  group by c.customer_id
+)
+
+select customer_id from category_products_count as cpc
+where cpc.category_count = (select count(DISTINCT product_category) from products)
+
+```
