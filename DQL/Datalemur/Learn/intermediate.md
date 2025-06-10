@@ -205,7 +205,27 @@ order by pages.page_id DESC
 ```
 
 ### CROSS JOIN
-BLA BLA
+Se usa para combinar todas las filas de una tabla con todas las filas de otra tabla. Genera el producto cartesiano, lo que significa que si una tabla tiene 3 filas y la otra tiene 4, el resultado tendrá 3×4 = 12 filas.
+
+>No necesita una condición de unión (como ON), y se debe usar con cuidado ya que puede generar muchas filas rápidamente.
+
+Sintaxis básica
+```sql
+SELECT *
+FROM table1
+CROSS JOIN table2;
+```
+
+Por **ejemplo**, acá nos muestra por cada nombre cada dia, es decir, Andrea | Lunes, Andrea | Martes, Andrea | Miercoles y así...
+```sql
+SELECT 
+    employees.name, 
+    shifts.day 
+FROM employees
+CROSS JOIN shifts;
+```
+
+> Es un poco confuso de entender, si sirve de ayuda acá hay un [ejercicio](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/Learn/advanced.md#ejemplos) para entenderlo
 
 ## DATE FUNCTIONS
 Resumen de lo que se va a cubrir: 
