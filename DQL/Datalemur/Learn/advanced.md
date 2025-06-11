@@ -98,4 +98,10 @@ group by card_name
 order by issued_amount desc
 ```
 
+> Alguans funciones más comunes son, aparte de las ya conocidas son:
+> - `ROW_NUMBER()`
+> - `RANK()` / `DENSE_RANK()`
+> - `FIRST_VALUE()` / `LAST_VALUE()`
+> - `LAG()` / `LEAD()`
+
 ## Ranking
