@@ -29,6 +29,18 @@ cross join total_orders as t
 order by corrected_order_id
 ```
 
+Existe uan solución usando el tema de ***Window Functions*** que veremos más adelante
+```sql
+select CASE
+  when order_id = COUNT(order_id) OVER () THEN order_id
+  when order_id%2=0 then order_id-1
+  else order_id+1
+end as corrected_order_id,
+item
+from orders
+order by corrected_order_id
+```
+
 ### Ejemplo 2
 
 Este [ejericio](https://datalemur.com/questions/supercloud-customer) también es bastante enredado la primera vez, y más si no sabias que se podia hacer el ``distinct`` en ``count``. La idea es encontrar qué usuarios han comprado al menos un producto de cada categoría disponible. 
@@ -47,5 +59,43 @@ with category_products_count as (
 
 select customer_id from category_products_count as cpc
 where cpc.category_count = (select count(DISTINCT product_category) from products)
-
 ```
+
+## Window Functions
+Una window function me crea una nueva columna, donde realiza un cálculo (como suma, promedio, ranking, etc.) sobre un conjunto de filas relacionadas (si es el caso). Este conjunto de filas se llama “ventana”.
+
+Sintaxis básica, usando ``PARTITION BY`` y ``ORDER BY``
+```sql
+-- SELECT...
+agg_función() OVER (
+  PARTITION BY ... 
+  ORDER BY ...
+) AS ...
+```
+
+Diferencias del uso de solo ``OVER`` con o sin ``PARTITION BY`` y ``ORDER BY``, para este caso la agg_funcion es ``SUM()``, pero vale para todas, hay que agarrarle la lógica.
+
+| ¿Incluye `PARTITION BY`? | ¿Incluye `ORDER BY`? | ¿Qué hace?                                                                 |
+|--------------------------|----------------------|-----------------------------------------------------------------------------|
+| ❌ No                    | ❌ No                | Muestra el **mismo valor total** en todas las filas.   |
+| ✅ Sí                    | ❌ No                | Muestra el **total por grupo**, repetido para cada fila del grupo.         |
+| ✅ o ❌                  | ✅ Sí               | Muestra un **acumulado progresivo** (running total), según la partición dada. |
+
+**Ejemplo**, para este [ejercicio](https://datalemur.com/questions/card-launch-success), la idea es mostrar la cantidad de problemas que tuvo la tarjeta de crédito el primer mes de su lanzamiento, por lo tanto, mostramos el nombre de la tarjeta y su primer valor separado por ``card_name`` y ordenado por ``issue_year``, ``issue_month``, esto en un **CTE**, como nos dan varios valores y solo queremos uno, podemos hacer uso de un ``group by``, y en este caso usé un ``max()``
+
+```sql
+with card_issues as (
+  select card_name,
+  FIRST_VALUE(issued_amount) over (
+  partition by card_name
+  ORDER BY issue_year, issue_month
+  ) as issued_amount
+  from monthly_cards_issued
+)
+
+select card_name, max(issued_amount) as issued_amount from card_issues
+group by card_name
+order by issued_amount desc
+```
+
+## Ranking

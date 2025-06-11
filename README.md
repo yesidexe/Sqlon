@@ -22,6 +22,10 @@ Para esta parte me voy a basar en sitios como [Datalemur](https://datalemur.com/
 - [JOINS](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/Learn/intermediate.md#joins)
 - [DATE FUNCTIONS](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/Learn/intermediate.md#date-functions)
 
+### [Advanced](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/Learn/advanced.md#advanced)
+
+- [CTE (Common table expressions) vs SUBQUERY](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/Learn/advanced.md#cte-common-table-expressions-vs-subquery)
+
 ## DCL – Data Control Language (Permisos y seguridad)
 
 ## TCL – Transaction Control Language (Control de transacciones)
