@@ -66,11 +66,12 @@ Una window function me crea una nueva columna, donde realiza un cálculo (como s
 
 Sintaxis básica, usando ``PARTITION BY`` y ``ORDER BY``
 ```sql
--- SELECT...
+SELECT
 agg_función() OVER (
   PARTITION BY ... 
   ORDER BY ...
 ) AS ...
+FROM
 ```
 
 Diferencias del uso de solo ``OVER`` con o sin ``PARTITION BY`` y ``ORDER BY``, para este caso la agg_funcion es ``SUM()``, pero vale para todas, hay que agarrarle la lógica.
@@ -105,3 +106,77 @@ order by issued_amount desc
 > - `LAG()` / `LEAD()`
 
 ## Ranking
+Es una función de ventana que asigna un número de ranking a cada fila dentro de una partición, según el orden que vos le des. Si hay empates, les da el mismo número… pero salta el siguiente.
+
+Sintaxis basica
+```sql
+SELECT 
+  RANK() / DENSE_RANK() / ROW_NUMBER() OVER ( -- Compulsory expression
+    PARTITION BY partitioning_expression -- Optional expression
+    ORDER BY order_expression) -- Compulsory expression
+FROM table_name;
+```
+
+Diferencias entre ``ROW_NUMBER()``, ``RANK()`` y ``DENSE_RANK()``
+
+| Función        | ¿Salta números si hay empates? | ¿Da un número único por fila? | ¿Qué hace si hay empate?                                              |
+| -------------- | ------------------------------ | ----------------------------- | --------------------------------------------------------------------- |
+| `ROW_NUMBER()` | ❌ No                           | ✅ Sí                          | Asigna números únicos, **sin importar empates**                       |
+| `RANK()`       | ✅ Sí                           | ❌ No (puede repetir)          | **Empates comparten posición**, y se **saltan** números después       |
+| `DENSE_RANK()` | ❌ No                           | ❌ No (puede repetir)          | **Empates comparten posición**, pero **no se saltan** números después |
+
+Ejemplo visual
+```sql
+SELECT 
+  nombre, score,
+  ROW_NUMBER() OVER (ORDER BY score DESC) AS row_num,
+  RANK()       OVER (ORDER BY score DESC) AS rank,
+  DENSE_RANK() OVER (ORDER BY score DESC) AS dense_rank
+FROM tabla
+```
+
+| nombre | score | row\_num | rank | dense\_rank |
+| ------ | ----- | -------- | ---- | ----------- |
+| Ana    | 100   | 1        | 1    | 1           |
+| Beto   | 90    | 2        | 2    | 2           |
+| Carla  | 90    | 3        | 2    | 2           |
+| David  | 80    | 4        | 4    | 3           |
+
+### Ejemplo 1
+En este [ejercicio](https://datalemur.com/questions/top-fans-rank), tenemos tres tablas, ``artists``,`songs`, y `global_song_rank`, lo que nos piden es mostrar es el top 5 de los artistas con más canciones en el top 10.
+
+```sql
+with prueba as (
+  SELECT artist_name,
+    DENSE_RANK() over(
+    order by count(songs.song_id) desc) as artist_rank
+  FROM artists
+  inner join songs on artists.artist_id = songs.artist_id
+  inner join global_song_rank on songs.song_id = global_song_rank.song_id
+  where global_song_rank.rank <= 10
+  group by artist_name
+)
+
+select * from prueba
+where artist_rank <= 5
+```
+
+### Ejemplo 2
+En este [ejercicio](https://datalemur.com/questions/histogram-users-purchases) se registra cada vez que se hizo una compra, entonces tenemos que mostrar el id del usuario junto con la fecha en que se hizo su ultima transacción y los productos que compró en esa ultima fecha. el chiste de usar `RANK()` es para separar por `user_id` y ordenar según `transaction_date` y así tendremos la ultima fecha, por qué usar *RANK* (También serviria *DENSE*)? porque puede ser que hayan dos registros con la misma fecha y se necesitan contar los registros donde `transaction_rank=1` o sea, la ultima fecha.
+
+```sql
+with latest_transactions as (
+select user_id, transaction_date, product_id,
+RANK() OVER (
+  PARTITION BY user_id ORDER BY transaction_date DESC
+) AS transaction_rank
+from user_transactions  
+)
+
+select user_id, transaction_date, count(transaction_rank) as purchase_count from latest_transactions
+where transaction_rank=1
+group by user_id, transaction_date
+order by transaction_date
+```
+
+### Ejemplo 3
