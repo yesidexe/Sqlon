@@ -27,6 +27,7 @@ Para esta parte me voy a basar en sitios como [Datalemur](https://datalemur.com/
 - [CTE (Common table expressions) vs SUBQUERY](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/Learn/advanced.md#cte-common-table-expressions-vs-subquery)
 - [Window Functions](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/Learn/advanced.md#window-functions)
 - [Ranking](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/Learn/advanced.md#ranking)
+- [Lead & Lag](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/Learn/advanced.md#lead--lag)
 
 ## DCL – Data Control Language (Permisos y seguridad)
 
