@@ -28,6 +28,8 @@ Para esta parte me voy a basar en sitios como [Datalemur](https://datalemur.com/
 - [Window Functions](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/Learn/advanced.md#window-functions)
 - [Ranking](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/Learn/advanced.md#ranking)
 - [Lead & Lag](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/Learn/advanced.md#lead--lag)
+- [SELF-JOINS](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/Learn/advanced.md#self-joins)
+- [UNION, INTERCEPT, EXCEPT](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/Learn/advanced.md#union-intercept-except)
 
 ## DCL – Data Control Language (Permisos y seguridad)
 
