@@ -199,3 +199,63 @@ order by measurement_day asc
 ```
 
 ## LEAD & LAG
+Son window functions que se utilizan para acceder a una fila anterior o posterior (dependiendo de `offset`) a la fila actual dentro de una partición o conjunto de datos ordenado.
+
+Sintaxis (para `LEAD()` es igual)
+```sql
+LAG(column_name, offset) OVER ( -- Compulsory expression
+  PARTITION BY partition_column -- Optional expression
+  ORDER BY order_column) -- Compulsory expression
+```
+
+En este **ejemplo**, el [ejercicio](https://datalemur.com/questions/yoy-growth-rate) nos pide mostrar agrupado por ``product_id`` y ``year``, el spend del año actual, con el anterior y su % de variación.
+
+```sql
+with prueba as(
+  SELECT
+  DATE_PART('year', transaction_date) AS year,
+  product_id,
+  spend as curr_year_spend,
+  lag(spend) over (partition by product_id order by DATE_PART('year', transaction_date)) as prev_year_spend
+  FROM user_transactions
+)
+
+select *,  
+round(((curr_year_spend-prev_year_spend)/prev_year_spend)*100,2) as yoy_rate
+from prueba
+```
+
+## SELF-JOINS
+Es confuso, sin embargo una definición seria algo como, un SELF JOIN es cuando una tabla se une consigo misma para poder comparar o relacionar sus propias filas.
+
+En este **ejemplo**, el [ejercicio](https://datalemur.com/questions/sql-well-paid-employees) me pide mostrar el ID y el nombre del empleado que gana más que su manager, en esta ocación voy a mostrar un ejemplo de la tabla para que sea mas facil entender, entonces lo que hago es usar el ``inner join`` para agregar la nueva tabla (que es la misma pero la nombré managers) donde igualé el ``employee_id`` con ``manager_id``, para por decirlo así generar una tabla de solo managers.
+
+| employee_id | name                | salary | department_id | manager_id |
+|-------------|---------------------|--------|----------------|-------------|
+| 1           | Emma Thompson       | 3800   | 1              | 6           |
+| 2           | Daniel Rodriguez    | 2230   | 1              | 7           |
+| 3           | Olivia Smith        | 7000   | 1              | 8           |
+| 4           | Noah Johnson        | 6800   | 2              | 9           |
+| 5           | Sophia Martinez     | 1750   | 1              | 11          |
+| 6           | Liam Brown          | 13000  | 3              | NULL        |
+| 7           | Ava Garcia          | 12500  | 3              | NULL        |
+| 8           | William Davis       | 6800   | 2              | NULL        |
+| 9           | Isabella Wilson     | 11000  | 3              | NULL        |
+| 10          | James Anderson      | 4000   | 1              | 11          |
+| 11          | Mia Taylor          | 10800  | 3              | NULL        |
+| 12          | Benjamin Hernandez  | 9500   | 3              | 8           |
+| 13          | Charlotte Miller    | 7000   | 2              | 6           |
+| 14          | Logan Moore         | 8000   | 2              | 6           |
+| 15          | Amelia Lee          | 4000   | 1              | 7           |
+
+
+```sql
+select employees.employee_id as employee_id,
+employees.name as employee_name
+from employee as employees
+inner join employee as managers
+on employees.manager_id = managers.employee_id
+where employees.salary > managers.salary
+```
+
+## UNION, INTERCEPT, EXCEPT
