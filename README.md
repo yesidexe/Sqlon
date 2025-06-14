@@ -6,7 +6,8 @@ Me falta estructurar bien el repo
 ## DML – Data Manipulation Language (Manipulación de datos)
 
 ## DQL – Data Query Language (Consulta de datos)
-Para esta parte me voy a basar en sitios como [Datalemur](https://datalemur.com/), [HackerRank](https://www.hackerrank.com/domains/sql) y quizás otros sitios que iré poniendo más adelante.
+Para esta parte me voy a basar en sitios como [Datalemur](https://datalemur.com/), [HackerRank](https://www.hackerrank.com/domains/sql) y quizás otros sitios que iré poniendo más adelante.    
+> Antes de empezar veo importante conocer el [EXECUTION ORDER](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/Learn/advanced.md#execution-order), para saber como se van a ir ejecutando las consultas y evitar confusiones o frustraciones (me pasó).
 
 ### [Basic](https://github.com/yesidexe/Sqlon/blob/main/DQL/Datalemur/Learn/basic.md)
 
