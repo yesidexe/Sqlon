@@ -259,3 +259,330 @@ where employees.salary > managers.salary
 ```
 
 ## UNION, INTERCEPT, EXCEPT
+
+### UNION / UNION ALL
+
+Mientras que el JOIN une tablas de manera horizontal, el UNION lo hace de manera vertical, existe el `UNION` que me une las tablas removiendo las filas duplicadas, y el ``UNION ALL`` que no las remueve. Existen ciertas reglas obvias como sean el mismo numero y tipo de columnas, además de tener el mismo orden de las  columnas.
+
+Por ejemplo, en este [ejercicio](https://datalemur.com/questions/prime-warehouse-storage) que me costó fue entender cómo sacar las fórmulas, ya que no eran tan evidentes al principio. Normalmente uno pensaría que estas fórmulas ya vendrían dadas, pero aquí había que deducirlas.  
+La idea era calcular cuántos lotes (batches) de productos se pueden almacenar en una bodega de 500,000 pies cuadrados, dando prioridad a los productos prime. Para resolverlo, primero uso un **CTE** llamado variables donde calculo los valores clave como el área total y cantidad de ítems por tipo (**prime** y **not_prime**). Luego, en otro **CTE** (prime_area) calculo cuánto espacio ocuparían los lotes prime. Finalmente, uso un `UNION` para juntar los resultados de cuántos lotes de cada tipo se pueden almacenar, usando FLOOR para asegurar que los valores sean enteros y no se exceda el espacio.
+
+```sql
+with variables as (
+select
+  sum(square_footage) filter (where item_type = 'prime_eligible') as prime_sf,
+  count(item_id) filter (where item_type = 'prime_eligible') as prime_count,
+  sum(square_footage) filter (where item_type = 'not_prime') as not_prime_sf,
+  count(item_id) filter (where item_type = 'not_prime') as not_prime_count
+from inventory
+), prime_area as(
+select floor(500000/prime_sf)*prime_sf as pa
+from variables
+)
+
+select 'prime_eligible' as item_type,
+FLOOR(500000/prime_sf)*prime_count AS item_count
+from variables
+UNION all
+select 'not_prime' as item_type,
+floor((500000-(select pa from prime_area))/not_prime_sf)*not_prime_count as item_count
+from variables
+```
+
+### INTERSECT
+Funciona igual que un `INNER JOIN` pero en lugar de funcionar de manera horizontal (agregar columnas), funciona en vertical (agrega filas).
+
+Un **ejemplo** sencillo seria que me muestre los ingredientes en común que tienen estas dos tablas (dos recetas).
+```sql
+SELECT ingredient
+FROM recipe_1
+INTERSECT
+SELECT ingredient
+FROM recipe_2;
+```
+
+Otro **ejemplo** quizás mas elaborado seria este, que me mostraria los `order_id` resultates de realizar estas dos consultas de estas dos tablas.
+```sql
+SELECT order_id
+FROM orders
+WHERE quantity >= 2
+INTERSECT
+SELECT order_id
+FROM deliveries
+WHERE delivery_status = 'Delivered';
+```
+
+### EXCEPT
+`EXCEPT` muestra los datos que están en la **primera consulta** pero **no** en la **segunda**. Se puede interpretar como: “Muéstrame los resultados de esta consulta **excepto** los que también aparezcan en esta otra, o Muestrame los resultados de esta consulta que no salen en esta otra”.
+
+Un **ejemplo** breve sería mostrar los ingredientes de la tabla `recipe_1` que **no están** en la tabla `recipe_2`:
+
+```sql
+SELECT ingredient
+FROM recipe_1
+EXCEPT
+SELECT ingredient
+FROM recipe_2;
+```
+
+Un **ejemplo** de este [ejercicio](https://datalemur.com/questions/sql-page-with-no-likes) sería mostrar los `page_id` de la tabla `pages` que **no aparecen** en la tabla `page_likes`.  
+¿Por qué? Porque el ejercicio pide identificar las páginas con **cero likes**.  
+En la tabla `pages` están todos los ID de páginas, mientras que en `page_likes` solo aparecen los ID de las páginas que han recibido al menos un like.  
+Por lo tanto, si usamos `EXCEPT`, podemos obtener los `page_id` que existen pero **no tienen likes**, ya que no figuran en la segunda tabla.
+
+```sql
+SELECT page_id
+FROM pages
+EXCEPT
+SELECT page_id
+FROM page_likes
+order by page_id;
+```
+
+## WRITE CLEAN SQL
+Buenas practicas a la hora de escribir código en SQL:
+
+### Uppercase for Keywords
+❌ Evitar:
+```sql
+select
+  id, 
+  product_name
+  sum(amount) as total_amount
+from company.transactions;
+```
+
+✔ Mejor:
+```sql
+SELECT
+  id, 
+  product_name
+  SUM(amount) AS total_amount  
+FROM company.products;
+```
+
+### Lowercase or Snake Case for Names
+Cuando se trata de nombrar esquemas, tablas o columnas es mejor nombrarlo en **lowercase** o **snake_case**, además de claro mantener la consistencia en caso de trabajar ya con código ya sea de un equipo o de un proyecto.
+
+❌ Evitar:
+```sql
+SELECT 
+  Users.City, 
+  COUNT(Trades.OrderId) AS TotalOrders 
+FROM Trades
+INNER JOIN Users 
+  ON TRADES.UserId = Users.UserId 
+WHERE Trades.Status = 'Completed' 
+GROUP BY Users.City 
+ORDER BY TotalOrders DESC;
+```
+✔ Mejor:
+```sql
+SELECT 
+  users.city, 
+  COUNT(trades.order_id) AS total_orders 
+FROM trades 
+INNER JOIN users 
+  ON trades.user_id = users.user_id 
+WHERE trades.status = 'Completed' 
+GROUP BY users.city 
+ORDER BY total_orders DESC;
+```
+
+### Descriptive and Concise Aliases
+Nombrar las cosas que se entienda
+
+❌ Evitar
+```sql
+SELECT 
+  plc.ticker,
+  AVG(sp.close) average,
+  ROUND(AVG(sp.close), 2) average_c
+FROM stock_prices sp
+INNER JOIN public_listed_companies plc
+  ON sp.ticker = plc.ticker
+WHERE EXTRACT(YEAR FROM sp.date) = 2022
+GROUP BY pls.ticker;
+```
+✔ Mejor:
+```sql
+SELECT 
+  companies.ticker,
+  AVG(prices.close) AS avg_close,
+  ROUND(AVG(prices.close), 2) AS rounded_avg_close
+FROM stock_prices AS prices
+INNER JOIN public_listed_companies AS companies
+  ON prices.ticker = companies.ticker
+WHERE EXTRACT(YEAR FROM prices.date) = 2022
+GROUP BY companies.ticker;
+```
+
+### Consistent Formatting and Indentation
+Mantener el formato, que se vea bien
+
+❌ Evitar
+```sql
+WITH product_sales AS (
+SELECT
+product_id,
+  SUM(sales_amount) AS total_sales
+FROM sales
+GROUP BY product_id
+  )
+
+SELECT
+products.product_name,
+sales.total_sales
+FROM products
+  INNER JOIN product_sales sales ON products.product_id = sales.product_id
+```
+
+✔ Mejor: 
+```sql
+WITH product_sales AS (
+  SELECT
+    product_id,
+    SUM(sales_amount) AS total_sales
+  FROM sales
+  GROUP BY product_id)
+
+SELECT
+  products.product_name,
+  sales.total_sales
+FROM products
+INNER JOIN product_sales AS sales
+  ON products.product_id = sales.product_id;
+```
+
+### Avoid Writing SELECT *
+No abusar del ``*``, mejor escribir lo que se va a usar, queda mas legible de paso.
+
+❌ Evitar:
+```sql
+SELECT * 
+FROM employees;
+```
+
+✔ Mejor:
+```sql
+SELECT 
+  employee_id, 
+  first_name, 
+  last_name 
+FROM employees;
+```
+
+### Use JOINs Explicitly for Clarity
+❌ Evitar:
+```sql
+SELECT 
+  users.name, 
+  orders.order_date
+FROM users, orders -- Avoid joining tables like this
+WHERE users.id = orders.user_id;
+```
+
+✔ Mejor:
+```sql
+SELECT 
+  users.name AS user_name, 
+  orders.order_date
+FROM users
+INNER JOIN orders -- Use the JOIN keyword
+  ON users.id = orders.user_id;
+```
+
+### Format Dates Consistently
+❌ Evitar:
+```sql
+SELECT * 
+FROM orders 
+WHERE order_date = '01-12-2012';
+```
+
+✔ Mejor:
+```sql
+SELECT * 
+FROM orders 
+WHERE order_date = '2012-12-01';
+```
+
+### Comment Wisely
+Usar los comentarios `--`, `/**/` y bien...
+
+❌ Evitar:
+```sql
+-- This query retrieves data from the sales table
+SELECT
+  product_name,
+  SUM(sales_amount) AS total_sales
+FROM sales
+GROUP BY product_name;
+```
+
+✔ Mejor:
+```sql
+-- Calculate the total sales for each product
+SELECT
+  product_name,
+  SUM(sales_amount) AS total_sales
+FROM sales
+GROUP BY product_name;
+```
+
+## EXECUTION ORDER
+| Cláusula     | Orden | Descripción                                                                                                                                      |
+|--------------|-------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| FROM         | 1     | La consulta comienza con la cláusula FROM, donde la base de datos identifica las tablas involucradas y accede a los datos necesarios.           |
+| WHERE        | 2     | La base de datos aplica las condiciones especificadas en la cláusula WHERE para filtrar los datos obtenidos de las tablas indicadas en FROM.    |
+| GROUP BY     | 3     | Si hay una cláusula GROUP BY, los datos se agrupan según las columnas indicadas y se aplican funciones de agregación (como SUM(), AVG(), COUNT()). |
+| HAVING       | 4     | La cláusula HAVING filtra los datos agregados basándose en las condiciones especificadas.                                                       |
+| SELECT       | 5     | La cláusula SELECT define las columnas que se incluirán en el conjunto de resultados final.                                                     |
+| ORDER BY     | 6     | Si se utiliza la cláusula ORDER BY, el conjunto de resultados se ordena según las columnas especificadas.                                       |
+| LIMIT/OFFSET | 7     | Si hay una cláusula LIMIT u OFFSET, el conjunto de resultados se limita al número de filas indicado y opcionalmente se omiten ciertas filas.     |
+
+## PIVOTING / UNPIVOTING
+Para esto se suele usar el `CASE` junto con una función de agregación depende lo que queramos hacer, y un `GROUP BY`.
+
+Por **ejemplo**, haremos un pivot de `engagement_rate`, para cada heroe en cada plataforma, y por supuesto agrupamos por heroe.
+```sql
+SELECT
+  superhero_alias,
+  MAX(CASE WHEN platform = 'Instagram' THEN engagement_rate END) AS instagram_engagement_rate,
+  MAX(CASE WHEN platform = 'Twitter' THEN engagement_rate END) AS twitter_engagement_rate,
+  MAX(CASE WHEN platform = 'TikTok' THEN engagement_rate END) AS tiktok_engagement_rate,
+  MAX(CASE WHEN platform = 'YouTube' THEN engagement_rate END) AS youtube_engagement_rate
+FROM marvel_avengers
+WHERE superhero_alias IN ('Iron Man', 'Captain America', 'Black Widow', 'Thor')
+GROUP BY superhero_alias
+ORDER BY superhero_alias;
+```
+
+Luego quitamos el pivot, aunque no le veo sentido porque mejor dejamos la que estaba pero da igual, por si acaso.
+```sql
+SELECT
+  superhero_alias,
+  platform,
+  CASE platform
+    WHEN 'Instagram' THEN engagement_rate
+    WHEN 'Twitter' THEN engagement_rate
+    WHEN 'YouTube' THEN engagement_rate
+    WHEN 'TikTok' THEN engagement_rate
+  END AS engagement_rate
+FROM marvel_avengers
+WHERE superhero_alias IN ('Iron Man', 'Captain America', 'Black Widow', 'Thor')
+ORDER BY superhero_alias;
+```
+
+## STRING Functions
+La verdad son bastante sencillos, ni voy a poner ejemplos, cualquier cosa buscar en internet, es lo mismo de siempore que se suele ver en otros lenguajes.
+
+- Tidying up data with ``UPPER()`` and ``LOWER()``
+- Extracting substrings with ``LEFT()`` and ``RIGHT()``
+- Calculating length with ``LENGTH()``
+- Determining position with ``POSITION()``
+- Removing spaces using ``TRIM()``, ``LTRIM()``, ``RTRIM()``, and ``BTRIM()``
+- Concatenating strings with CONCAT()
+- Concatenating strings with separators using CONCAT_WS()
+- Slicing and dicing strings using ``SUBSTRING()``
+- Extracting substring based on delimiter using ``SPLIT_PART()``
